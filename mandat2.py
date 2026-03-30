@@ -20,11 +20,11 @@ print("STATISTIQUES DESCRIPTIVES DU TEMPS DE JEU")
 print("=" * 70)
 
 # Calculate statistics using unbiased estimators
-mean = np.mean(data)  # Unbiased sample mean
-median = np.median(data)
+mean = statistics.mean(data)  # Unbiased sample mean
+median = statistics.median(data)
 mode = statistics.mode(data)
-variance = np.var(data, ddof=1)  # Unbiased variance (using ddof=1)
-std_dev = np.std(data, ddof=1)  # Unbiased standard deviation
+variance = statistics.variance(data)  # Unbiased variance (using ddof=1)
+std_dev = statistics.stdev(data)  # Unbiased standard deviation
 minimum = np.min(data)
 maximum = np.max(data)
 range_val = maximum - minimum
@@ -45,15 +45,15 @@ print("=" * 70)
 print("CRÉATION DE L'HISTOGRAMME ET TABLEAU DE FRÉQUENCES")
 print("=" * 70)
 
-# Determine number of classes using Freedman-Diaconis rule (automatic, robust method)
+# Determine number of classes using Sturges' rule
 n = len(data)
-bins = np.histogram_bin_edges(data, bins='fd')  # 'fd' = Freedman-Diaconis (most robust)
-num_classes = len(bins) - 1
+num_classes = int(np.ceil(1 + np.log2(n)))
+bins = np.linspace(minimum, maximum, num_classes + 1)
 
 print(f"\nNombre d'observations: {n}")
-print(f"Nombre de classes (Règle de Freedman-Diaconis): {num_classes}")
-print(f"Justification: La règle de Freedman-Diaconis est automatique et robuste aux valeurs aberrantes.")
-print(f"Formule: Largeur des classes = 2 × IQR × n^(-1/3)")
+print(f"Nombre de classes (Règle de Sturges): {num_classes}")
+print("Justification: règle classique pour déterminer automatiquement le nombre de classes.")
+print("Formule: k = ceil(1 + log2(n))")
 frequencies, bin_edges = np.histogram(data, bins=bins)
 
 # Create frequency table
