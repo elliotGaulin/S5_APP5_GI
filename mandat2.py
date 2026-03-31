@@ -267,11 +267,11 @@ print(f"   z_α (pour α = {alpha_test}, test unilatéral à gauche) = {z_critic
 
 print(f"\nComparaison:")
 print(f"   z₀ = {z_stat:.6f}")
-print(f"   z_α = {z_critical_test:.6f}")
+print(f"   -z_α = {z_critical_test:.6f}")
 
 print(f"\nDécision (α = {alpha_test}):")
 if z_stat < z_critical_test:
-    print(f"   z₀ ({z_stat:.6f}) < z_α ({z_critical_test:.6f})")
+    print(f"   z₀ ({z_stat:.6f}) < -z_α ({z_critical_test:.6f})")
     print(f"   → REJETER H₀")
     print(f"   → Les données fournissent suffisamment de preuves que")
     print(f"     la moyenne est INFÉRIEURE à 300 minutes/semaine")
@@ -308,11 +308,9 @@ print(f"   Moyenne critique = {critical_value_mean:.2f} minutes")
 # Calculate Type II error using normal distribution
 # When true mean = sample_mean, we need P(not rejecting H₀ | H₁ is true)
 z_beta = (critical_value_mean - mean) / se
-beta = stats.norm.cdf(z_beta)
+beta = 1 - stats.norm.cdf(z_beta)
 
 print(f"\nCalcul de β (erreur de deuxième espèce):")
-print(f"   Vraie moyenne: μ = {mean:.2f}")
-print(f"   H₀ rejetée si: X̄ < {critical_value_mean:.2f}")
 print(f"   β = P(X̄ ≥ {critical_value_mean:.2f} | μ = {mean:.2f})")
 print(f"   β = P(Z ≥ {z_beta:.6f})")
 print(f"   β = {beta:.6f}")
