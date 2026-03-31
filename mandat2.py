@@ -199,22 +199,21 @@ for grp in merged_classes:
 
 if df_chi2 > 0:
     chi2_critical = chi2.ppf(1 - alpha_test, df=df_chi2)
-    p_value_chi2 = 1 - chi2.cdf(chi2_statistic, df=df_chi2)
 else:
     chi2_critical = float('nan')
-    p_value_chi2 = float('nan')
 
 print(f"\n   Statistique χ² (Pearson): {chi2_statistic:.6f}")
 print(f"   Degrés de liberté: {df_chi2}")
 print(f"   Valeur critique (α=5%): {chi2_critical:.6f}")
-print(f"   Valeur p: {p_value_chi2:.6f}")
 
 if df_chi2 <= 0:
     print("   Conclusion: Test non interprétable (ddl <= 0 après fusion des classes)")
-elif p_value_chi2 > alpha_test:
-    print(f"   Conclusion: Les données SUIVENT une distribution normale (p > {alpha_test})")
+elif chi2_statistic <= chi2_critical:
+    print(f"   Condition: χ²₀ = {chi2_statistic:.6f} ≤ χ²_(1-α, ddl) = {chi2_critical:.6f}")
+    print("   Conclusion: Les données SUIVENT une distribution normale")
 else:
-    print(f"   Conclusion: Les données NE SUIVENT PAS une distribution normale (p < {alpha_test})")
+    print(f"   Condition: χ²₀ = {chi2_statistic:.6f} > χ²_(1-α, ddl) = {chi2_critical:.6f}")
+    print("   Conclusion: Les données NE SUIVENT PAS une distribution normale")
 
 # ============== PART IV: CONFIDENCE INTERVAL ==============
 print("\n" + "=" * 70)
@@ -356,19 +355,14 @@ print(f"\nValeurs critiques (test bilatéral, α = {alpha_var}):")
 print(f"   χ²_(α/2, df={n-1}) = {chi2_lower:.6f}")
 print(f"   χ²_(1-α/2, df={n-1}) = {chi2_upper:.6f}")
 
-# P-value for two-tailed test
-p_value_var = 2 * min(chi2.cdf(chi2_stat, df=n-1), 1 - chi2.cdf(chi2_stat, df=n-1))
-
 print(f"\nDécision (α = {alpha_var}):")
 if chi2_stat < chi2_lower or chi2_stat > chi2_upper:
     print(f"   χ² = {chi2_stat:.6f} est HORS de l'intervalle [{chi2_lower:.6f}, {chi2_upper:.6f}]")
-    print(f"   Valeur p: {p_value_var:.6f} < {alpha_var}")
     print(f"   → REJETER H₀")
     print(f"   → Les données fournissent suffisamment de preuves que")
     print(f"     la variance est DIFFÉRENTE de {sigma2_assumed}")
 else:
     print(f"   χ² = {chi2_stat:.6f} est DANS l'intervalle [{chi2_lower:.6f}, {chi2_upper:.6f}]")
-    print(f"   Valeur p: {p_value_var:.6f} ≥ {alpha_var}")
     print(f"   → NE PAS REJETER H₀")
     print(f"   → Les données ne fournissent PAS suffisamment de preuves")
     print(f"     pour contredire que σ² = {sigma2_assumed}")
