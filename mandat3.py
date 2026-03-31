@@ -1,14 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
 
 # -----------------------------
 # Paramètres
 # -----------------------------
-N = 10000  # nombre de joueurs (au moins 10 000)
+N = 10000
 lambdas = [10, 50, 100]  # joueurs / minute
 
-mu = 280.58 / 7
-sigma = 50.38 / 7
+mu_semaine = 280.58  # temps moyen hebdomadaire en minutes
+sigma_semaine = 50.38
+
+# Convertir en valeurs journalières
+mu_jour = mu_semaine / 7
+sigma_jour = sigma_semaine / 7
 
 # -----------------------------
 # Échantillonnage
@@ -18,14 +23,15 @@ def sample_exponential_inverse(n, lambda_rate):
     u = np.clip(u, np.finfo(float).tiny, 1.0)
     return -np.log(u) / lambda_rate
 
-def sample_normal_box_muller(n, mean, std):
-    u1 = np.random.uniform(0, 1, n)
-    u2 = np.random.uniform(0, 1, n)
-    z = np.sqrt(-2 * np.log(u1)) * np.cos(2 * np.pi * u2)
+def sample_normal_inverse_cdf(n, mean, std):
+    u = np.random.uniform(0.0, 1.0, n)
+    u = np.clip(u, np.finfo(float).tiny, 1.0 - np.finfo(float).eps)
+    z = stats.norm.ppf(u)
     return mean + std * z
 
-
-
+# -----------------------------
+# Simulation Monte-Carlo
+# -----------------------------
 def simulation(lambda_rate):
     # 1. P ~ Exp(lambda) via transformation inverse
     P = sample_exponential_inverse(N, lambda_rate)
@@ -33,15 +39,15 @@ def simulation(lambda_rate):
     # 2. Instants d'arrivée
     t_arrival = np.cumsum(P)
 
-    # 3. Q ~ N(mu, sigma) via NumPy
-    Q = sample_normal_box_muller(N, mu, sigma)
-    Q = np.maximum(Q, 0)  # éviter les temps de jeu négatifs
+    # 3. Q ~ N(mu, sigma) via inverse CDF
+    Q = sample_normal_inverse_cdf(N, mu_jour, sigma_jour)
+    Q = np.maximum(Q, 0)  # éviter les temps négatifs
 
     # 4. Instants de départ
     t_departure = t_arrival + Q
 
     # 5. Estimer le nombre moyen de joueurs actifs sur 100 instants
-    t_start = t_arrival[int(N * 0.1)]  # éviter les premiers instants pour une meilleure estimation
+    t_start = t_arrival[int(N * 0.1)]
     t_end = t_arrival[-1]
     T_values = np.linspace(t_start, t_end, 100)
 
@@ -61,7 +67,7 @@ for lam in lambdas:
     P, Q, moyenne = simulation(lam)
 
     print(f"\nλ = {lam} joueurs/min")
-    print(f"Nombre moyen de joueurs connectés ≈ {moyenne:.2f}")
+    print(f"Nombre moyen de joueurs connectés (jour) ≈ {moyenne:.2f}")
 
     # Histogramme P (exponentielle)
     plt.figure()
@@ -74,7 +80,11 @@ for lam in lambdas:
     # Histogramme Q (normale)
     plt.figure()
     plt.hist(Q, bins=50, density=True)
-    plt.title("Histogramme Q (Normale, Box-Muller)")
-    plt.xlabel("Temps de jeu")
+    plt.title("Histogramme Q (Normale, inverse CDF)")
+    plt.xlabel("Temps de jeu (minutes/jour)")
     plt.ylabel("Fréquence")
     plt.show()
+
+    # Estimation théorique rapide
+    moyenne_theorique = lam * mu_jour
+    print(f"Nombre moyen de joueurs (théorique, jour) ≈ {moyenne_theorique:.2f}")
