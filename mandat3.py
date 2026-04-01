@@ -69,7 +69,7 @@ for lam in lambdas:
     plt.figure()
     plt.hist(P, bins=50, density=True)
     plt.title(f"Histogramme P (Exponentielle) - λ={lam}")
-    plt.xlabel("Temps entre arrivées")
+    plt.xlabel("Temps entre arrivées (minutes)")
     plt.ylabel("Fréquence")
     plt.show()
 
