@@ -5,15 +5,11 @@ from scipy import stats
 # -----------------------------
 # Paramètres
 # -----------------------------
-N = 10000
+N = 100000
 lambdas = [10, 50, 100]  # joueurs / minute
 
 mu_semaine = 280.58  # temps moyen hebdomadaire en minutes
 sigma_semaine = 50.38
-
-# Convertir en valeurs journalières
-mu_jour = mu_semaine / 7
-sigma_jour = sigma_semaine / 7
 
 # -----------------------------
 # Échantillonnage
@@ -40,7 +36,7 @@ def simulation(lambda_rate):
     t_arrival = np.cumsum(P)
 
     # 3. Q ~ N(mu, sigma) via inverse CDF
-    Q = sample_normal_inverse_cdf(N, mu_jour, sigma_jour)
+    Q = sample_normal_inverse_cdf(N, mu_semaine, sigma_semaine)
     Q = np.maximum(Q, 0)  # éviter les temps négatifs
 
     # 4. Instants de départ
@@ -67,13 +63,13 @@ for lam in lambdas:
     P, Q, moyenne = simulation(lam)
 
     print(f"\nλ = {lam} joueurs/min")
-    print(f"Nombre moyen de joueurs connectés (jour) ≈ {moyenne:.2f}")
+    print(f"Nombre moyen de joueurs connectés ≈ {moyenne:.2f}")
 
     # Histogramme P (exponentielle)
     plt.figure()
     plt.hist(P, bins=50, density=True)
     plt.title(f"Histogramme P (Exponentielle) - λ={lam}")
-    plt.xlabel("Temps entre arrivées")
+    plt.xlabel("Temps entre arrivées (minutes)")
     plt.ylabel("Fréquence")
     plt.show()
 
@@ -81,10 +77,10 @@ for lam in lambdas:
     plt.figure()
     plt.hist(Q, bins=50, density=True)
     plt.title("Histogramme Q (Normale, inverse CDF)")
-    plt.xlabel("Temps de jeu (minutes/jour)")
+    plt.xlabel("Temps de jeu (minutes/semaine)")
     plt.ylabel("Fréquence")
     plt.show()
 
     # Estimation théorique rapide
-    moyenne_theorique = lam * mu_jour
-    print(f"Nombre moyen de joueurs (théorique, jour) ≈ {moyenne_theorique:.2f}")
+    moyenne_theorique = lam * mu_semaine
+    print(f"Nombre moyen de joueurs (théorique) ≈ {moyenne_theorique:.2f}")
